@@ -4,14 +4,21 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import BooksWindow from './booksWindow';
 import TextField from '@mui/material/TextField';
-import Container from '@mui/material/Container';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
+import FolderIcon from '@mui/icons-material/Folder';
+import RestoreIcon from '@mui/icons-material/Restore';
+import BottomNavigation from '@mui/material/BottomNavigation';
+import BottomNavigationAction from '@mui/material/BottomNavigationAction';
+
+import AllBooksWindow from './booksWindow';
+import BooksToReed from './booksToRead';
+import MyBooks from './myBook';
+import './App.css';
+
 
 export default class App extends Component
 {
@@ -19,14 +26,26 @@ export default class App extends Component
 
     constructor(props) {
         super(props);
-        this.state = { activeWindow: "totalBooks", jwt: "", userName : "" , password : "", loginOpen: false };//
+        this.state = { jwt: "", userName: "", password: "", loginOpen: false, hiddenStatus: "hidden", navigation : 2 };
     }
-
     render()
     {
+        let table;
+        switch (this.state.navigation)
+        {
+            case 0:
+                table = App.renderMyBooksTable(this.state.jwt);
+                break;
+            case 1:
+                table = App.renderBooksToRead(this.state.jwt);
+                break;
+            default:
+                table = App.renderAllBoksTable();
+                break;
+        }
         return (
             <div>
-                <Box sx={{ flexGrow: 1 }}>
+                <Box className="header" sx={{ flexGrow: 1 }}>
                     <AppBar position="static">
                         <Toolbar>
                             <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
@@ -60,7 +79,21 @@ export default class App extends Component
                         </Toolbar>
                     </AppBar>
                 </Box>
-                <BooksWindow />
+
+                {table}
+
+                <div className={this.state.hiddenStatus}>
+                    <Box>
+                        <BottomNavigation
+                            showLabels
+                            value={this.state.navigation}
+                            onChange={this.switchWindow.bind(this) }
+                        >
+                            <BottomNavigationAction label="My books" icon={<RestoreIcon />} />
+                            <BottomNavigationAction label="All books" icon={<FolderIcon />} />
+                        </BottomNavigation>
+                    </Box>
+                </div>
             </div>
         );
     }
@@ -76,12 +109,31 @@ export default class App extends Component
     handlePassword(event) {
         this.setState({ password: event.target.value})
     }
+
+    switchWindow(event, newValue) {
+        this.setState({navigation: newValue})
+    }
+
+    static renderAllBoksTable() {
+        return (<AllBooksWindow />)
+    }
+    static renderMyBooksTable(token) {
+        return (<MyBooks jwt={token }></MyBooks>)
+    }
+    static renderBooksToRead(token) {
+        return (<BooksToReed jwt={token} />)
+    }
+
     async doLogin() {
         const response = await fetch(
             `api/login?login=${this.state.userName}&password=${this.state.password}`,
             { method: "POST", headers: { "accept": "*/*"} }
         )
+        if (response.status === 401) {
+            alert('Wrong password')
+            return;
+        }
         const data = await response.json();
-        this.setState({ jwt: data.accessToken, userName: data.userName, loginOpen:false })
+        this.setState({ jwt: data.accessToken, userName: data.userName, loginOpen: false, hiddenStatus:"show", navigation:0 })
     }
 }

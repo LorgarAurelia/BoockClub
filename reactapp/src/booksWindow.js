@@ -39,11 +39,12 @@ export default class BooksWindow extends Component {
                 border: 0,
             },
         }));
-        return (<TableContainer component={Paper}>
+        return (
+            <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="Books">
                 <TableHead>
                     <TableRow>
-                        <StyledTableCell>Name</StyledTableCell>
+                            <StyledTableCell>Books</StyledTableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -60,7 +61,7 @@ export default class BooksWindow extends Component {
     }
     render() {
         let contents = this.state.loading
-            ? <p>Loading... Please refresh once the ASP.NET backend has started. </p>
+            ? <p>Loading... </p>
             : BooksWindow.renderBooksTable(this.state.books);
         return (
             <div>
